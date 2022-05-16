@@ -1,0 +1,44 @@
+version: '>= 0.14.0'
+
+formatter: markdown table
+
+content: |-
+  [![Tests](https://github.com/netascode/terraform-iosxe-evpn-overlay/actions/workflows/test.yml/badge.svg)](https://github.com/netascode/terraform-iosxe-evpn-overlay/actions/workflows/test.yml)
+
+  # Terraform IOS-XE EVPN Overlay Module
+
+  This module can manage a Catalyst 9000 EVPN fabric overlay.
+
+  The following assumptions have been made:
+
+  - A working underlay network including VTEP loopbacks is pre-configured (e.g., using the [EVPN OSPF Underlay Terraform Module](https://registry.terraform.io/modules/netascode/evpn-ospf-underlay/iosxe))
+  - A single BGP AS is used for all devices with spines acting as route reflectors
+  - All services will be provisioned on all leafs
+  - No L2 or L3 access interfaces will be provisioned
+  - A `l2_service` refers to a single L2 VNI
+  - A `l3_service` refers to a single VRF and L3 VNI
+  - A `l3_service` SVI will be provisioned as an anycast gateway on all leafs with a corresponding L2 VNI
+  - If no `ipv4_multicast_group` is configured ingress replication will be used
+
+  ## Examples
+
+  ```hcl
+  {{ include "./examples/complete/main.tf" }}
+  ```
+
+  {{ .Requirements }}
+
+  {{ .Providers }}
+
+  {{ .Inputs }}
+
+  {{ .Outputs }}
+
+  {{ .Resources }}
+
+output:
+  file: README.md
+  mode: replace
+
+sort:
+  enabled: false
