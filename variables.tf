@@ -65,12 +65,34 @@ variable "bgp_asn" {
   }
 }
 
+variable "l3_services" {
+  description = "List of L3 services. `name` is the VRF name. `id` is the core-facing SVI VLAN ID. If no `ipv4_multicast_group` is specified, ingress replication will be used."
+  type = list(object({
+    name = string
+    id   = number
+  }))
+  default  = []
+  nullable = false
+
+  validation {
+    condition = alltrue([
+      for s in var.l3_services : s.id >= 1 && s.id <= 4094
+    ])
+    error_message = "`id`: Must be a value between `1` and `4094`."
+  }
+}
+
 variable "l2_services" {
   description = "List of L2 services. `id` is the access VLAN ID. If no `ipv4_multicast_group` is specified, ingress replication will be used."
   type = list(object({
-    id                   = number
-    ipv4_multicast_group = optional(string)
-    ip_learning          = optional(bool)
+    name                     = string
+    id                       = number
+    ipv4_multicast_group     = optional(string)
+    l3_service               = optional(string)
+    ipv4_address             = optional(string)
+    ipv4_mask                = optional(string)
+    ip_learning              = optional(bool)
+    re_originate_route_type5 = optional(bool)
   }))
   default  = []
   nullable = false
@@ -88,74 +110,20 @@ variable "l2_services" {
     ])
     error_message = "`ipv4_multicast_group`: Allowed formats are: `225.0.0.1`."
   }
-}
-
-variable "l3_services" {
-  description = "List of L3 services. `name` is the VRF name. `id` is the core-facing SVI VLAN ID. If no `ipv4_multicast_group` is specified, ingress replication will be used."
-  type = list(object({
-    name                 = string
-    id                   = number
-    ipv4_multicast_group = optional(string)
-    ip_learning          = optional(bool)
-    svis = list(object({
-      id                       = number
-      ipv4_address             = string
-      ipv4_mask                = string
-      ipv4_multicast_group     = optional(string)
-      ip_learning              = optional(bool)
-      re_originate_route_type5 = optional(bool)
-    }))
-  }))
-  default  = []
-  nullable = false
 
   validation {
     condition = alltrue([
-      for s in var.l3_services : s.id >= 1 && s.id <= 4094
+      for s in var.l2_services : can(regex("^\\d+\\.\\d+\\.\\d+\\.\\d+$", s.ipv4_address)) || s.ipv4_address == null
     ])
-    error_message = "`id`: Must be a value between `1` and `4094`."
-  }
-
-  validation {
-    condition = alltrue([
-      for s in var.l3_services : can(regex("^\\d+\\.\\d+\\.\\d+\\.\\d+$", s.ipv4_multicast_group)) || s.ipv4_multicast_group == null
-    ])
-    error_message = "`ipv4_multicast_group`: Allowed formats are: `225.0.0.1`."
-  }
-
-  validation {
-    condition = alltrue(flatten([
-      for s in var.l3_services : [
-        for v in s.svis : v.id >= 1 && v.id <= 4094
-      ]
-    ]))
-    error_message = "`id`: Must be a value between `1` and `4094`."
-  }
-
-  validation {
-    condition = alltrue(flatten([
-      for s in var.l3_services : [
-        for v in s.svis : can(regex("^\\d+\\.\\d+\\.\\d+\\.\\d+$", v.ipv4_address))
-      ]
-    ]))
     error_message = "`ipv4_address`: Allowed formats are: `192.168.1.1`."
   }
 
   validation {
-    condition = alltrue(flatten([
-      for s in var.l3_services : [
-        for v in s.svis : can(regex("^\\d+\\.\\d+\\.\\d+\\.\\d+$", v.ipv4_mask))
-      ]
-    ]))
+    condition = alltrue([
+      for s in var.l2_services : can(regex("^\\d+\\.\\d+\\.\\d+\\.\\d+$", s.ipv4_mask)) || s.ipv4_mask == null
+    ])
     error_message = "`ipv4_mask`: Allowed formats are: `255.255.255.0`."
   }
-
-  validation {
-    condition = alltrue(flatten([
-      for s in var.l3_services : [
-        for v in s.svis : can(regex("^\\d+\\.\\d+\\.\\d+\\.\\d+$", v.ipv4_multicast_group)) || v.ipv4_multicast_group == null
-      ]
-    ]))
-    error_message = "`ipv4_multicast_group`: Allowed formats are: `225.0.0.1`."
-  }
 }
+
+

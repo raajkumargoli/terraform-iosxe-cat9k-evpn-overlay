@@ -5,7 +5,7 @@ formatter: markdown table
 content: |-
   [![Tests](https://github.com/netascode/terraform-iosxe-evpn-overlay/actions/workflows/test.yml/badge.svg)](https://github.com/netascode/terraform-iosxe-evpn-overlay/actions/workflows/test.yml)
 
-  # Terraform IOS-XE EVPN Overlay Module
+  # Terraform Cisco IOS-XE EVPN Overlay Module
 
   This module can manage a Catalyst 9000 EVPN fabric overlay.
 

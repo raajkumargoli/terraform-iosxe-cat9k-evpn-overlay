@@ -3,7 +3,7 @@ version: '>= 0.14.0'
 formatter: markdown table
 
 content: |-
-  # IOS-XE EVPN Overlay Example
+  # Cisco IOS-XE EVPN Overlay Example
 
   To run this example you need to execute:
 

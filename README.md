@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 [![Tests](https://github.com/netascode/terraform-iosxe-evpn-overlay/actions/workflows/test.yml/badge.svg)](https://github.com/netascode/terraform-iosxe-evpn-overlay/actions/workflows/test.yml)
 
-# Terraform IOS-XE EVPN Overlay Module
+# Terraform Cisco IOS-XE EVPN Overlay Module
 
 This module can manage a Catalyst 9000 EVPN fabric overlay.
 
@@ -48,42 +48,44 @@ module "iosxe_evpn_overlay" {
 
   bgp_asn = 65000
 
+  l3_services = [
+    {
+      name = "GREEN"
+      id   = 1000
+    },
+    {
+      name = "BLUE"
+      id   = 1010
+    }
+  ]
+
   l2_services = [
     {
+      name                 = "L2_101"
       id                   = 101
       ipv4_multicast_group = "225.0.0.101"
       ip_learning          = true
     },
     {
-      id = 102
-    }
-  ]
-
-  l3_services = [
-    {
-      name = "green"
-      id   = 1000
-      svis = [
-        {
-          id                       = 1001
-          ipv4_address             = "172.16.1.1"
-          ipv4_mask                = "255.255.255.0"
-          ipv4_multicast_group     = "225.0.1.1"
-          ip_learning              = true
-          re_originate_route_type5 = true
-        }
-      ]
+      name = "L2_102"
+      id   = 102
     },
     {
-      name = "blue"
-      id   = 1010
-      svis = [
-        {
-          id           = 1011
-          ipv4_address = "172.17.1.1"
-          ipv4_mask    = "255.255.255.0"
-        }
-      ]
+      name                     = "GREEN_1001"
+      id                       = 1001
+      ipv4_multicast_group     = "225.0.1.1"
+      l3_service               = "GREEN"
+      ipv4_address             = "172.16.1.1"
+      ipv4_mask                = "255.255.255.0"
+      ip_learning              = true
+      re_originate_route_type5 = true
+    },
+    {
+      name         = "BLUE_1011"
+      id           = 1011
+      l3_service   = "BLUE"
+      ipv4_address = "172.17.1.1"
+      ipv4_mask    = "255.255.255.0"
     }
   ]
 }
@@ -112,8 +114,8 @@ module "iosxe_evpn_overlay" {
 | <a name="input_underlay_loopbacks"></a> [underlay\_loopbacks](#input\_underlay\_loopbacks) | List of underlay loopback interfaces. These loopbacks are assumed to be pre-configured on every device. | <pre>list(object({<br>    device       = string<br>    ipv4_address = string<br>  }))</pre> | `[]` | no |
 | <a name="input_vtep_loopback_id"></a> [vtep\_loopback\_id](#input\_vtep\_loopback\_id) | Loopback ID used for VTEP loopbacks. These loopbacks are assumed to be pre-configured on all leafs. | `number` | `1` | no |
 | <a name="input_bgp_asn"></a> [bgp\_asn](#input\_bgp\_asn) | BGP AS number. | `number` | `65000` | no |
-| <a name="input_l2_services"></a> [l2\_services](#input\_l2\_services) | List of L2 services. `id` is the access VLAN ID. If no `ipv4_multicast_group` is specified, ingress replication will be used. | <pre>list(object({<br>    id                   = number<br>    ipv4_multicast_group = optional(string)<br>    ip_learning          = optional(bool)<br>  }))</pre> | `[]` | no |
-| <a name="input_l3_services"></a> [l3\_services](#input\_l3\_services) | List of L3 services. `name` is the VRF name. `id` is the core-facing SVI VLAN ID. If no `ipv4_multicast_group` is specified, ingress replication will be used. | <pre>list(object({<br>    name                 = string<br>    id                   = number<br>    ipv4_multicast_group = optional(string)<br>    ip_learning          = optional(bool)<br>    svis = list(object({<br>      id                       = number<br>      ipv4_address             = string<br>      ipv4_mask                = string<br>      ipv4_multicast_group     = optional(string)<br>      ip_learning              = optional(bool)<br>      re_originate_route_type5 = optional(bool)<br>    }))<br>  }))</pre> | `[]` | no |
+| <a name="input_l3_services"></a> [l3\_services](#input\_l3\_services) | List of L3 services. `name` is the VRF name. `id` is the core-facing SVI VLAN ID. If no `ipv4_multicast_group` is specified, ingress replication will be used. | <pre>list(object({<br>    name = string<br>    id   = number<br>  }))</pre> | `[]` | no |
+| <a name="input_l2_services"></a> [l2\_services](#input\_l2\_services) | List of L2 services. `id` is the access VLAN ID. If no `ipv4_multicast_group` is specified, ingress replication will be used. | <pre>list(object({<br>    name                     = string<br>    id                       = number<br>    ipv4_multicast_group     = optional(string)<br>    l3_service               = optional(string)<br>    ipv4_address             = optional(string)<br>    ipv4_mask                = optional(string)<br>    ip_learning              = optional(bool)<br>    re_originate_route_type5 = optional(bool)<br>  }))</pre> | `[]` | no |
 
 ## Outputs
 
@@ -133,12 +135,10 @@ No outputs.
 | [iosxe_bgp_neighbor.bgp_neighbor_spine](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/bgp_neighbor) | resource |
 | [iosxe_evpn.evpn](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/evpn) | resource |
 | [iosxe_evpn_instance.l2_evpn_instance](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/evpn_instance) | resource |
-| [iosxe_evpn_instance.l3_evpn_instance](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/evpn_instance) | resource |
 | [iosxe_interface_nve.nve](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/interface_nve) | resource |
+| [iosxe_interface_vlan.l2_svi](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/interface_vlan) | resource |
 | [iosxe_interface_vlan.l3_core_svi](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/interface_vlan) | resource |
-| [iosxe_interface_vlan.l3_svi](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/interface_vlan) | resource |
 | [iosxe_vlan_configuration.l2_vlan_configuration](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/vlan_configuration) | resource |
-| [iosxe_vlan_configuration.l3_svi_vlan_configuration](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/vlan_configuration) | resource |
 | [iosxe_vlan_configuration.l3_vlan_configuration](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/vlan_configuration) | resource |
 | [iosxe_vrf.vrf](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/vrf) | resource |
 <!-- END_TF_DOCS -->

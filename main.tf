@@ -1,37 +1,9 @@
 locals {
-  all                = setunion(var.leafs, var.spines)
-  leaf_spine_product = { for ls in setproduct(var.leafs, var.spines) : "${ls[0]}/${ls[1]}" => ls }
-  leaf_l2_services   = { for l in setproduct(var.leafs, var.l2_services) : "${l[0]}/${l[1].id}" => l }
-  leaf_l3_services   = { for l in setproduct(var.leafs, var.l3_services) : "${l[0]}/${l[1].id}" => l }
-
-  leaf_l3_service_svis = { for s in flatten([
-    for leaf in var.leafs : [
-      for l3 in var.l3_services : [
-        for svi in l3.svis : {
-          key = "${leaf}/${l3.id}/${svi.id}"
-          value = {
-            device                   = leaf
-            name                     = l3.name
-            id                       = svi.id
-            ipv4_address             = svi.ipv4_address
-            ipv4_mask                = svi.ipv4_mask
-            ipv4_multicast_group     = svi.ipv4_multicast_group
-            ip_learning              = svi.ip_learning
-            re_originate_route_type5 = svi.re_originate_route_type5
-          }
-        }
-      ]
-    ]
-  ]) : s.key => s.value }
-
-  l3_service_vnis = flatten([
-    for l3 in var.l3_services : [
-      for svi in l3.svis : {
-        id                   = svi.id
-        ipv4_multicast_group = svi.ipv4_multicast_group
-      }
-    ]
-  ])
+  all                  = setunion(var.leafs, var.spines)
+  leaf_spine_product   = { for ls in setproduct(var.leafs, var.spines) : "${ls[0]}/${ls[1]}" => ls }
+  leaf_l3_services     = { for l in setproduct(var.leafs, var.l3_services) : "${l[0]}/${l[1].id}" => l }
+  leaf_l2_services     = { for l in setproduct(var.leafs, var.l2_services) : "${l[0]}/${l[1].id}" => l }
+  leaf_l2_services_svi = { for l in setproduct(var.leafs, var.l2_services) : "${l[0]}/${l[1].id}" => l if l[1].ipv4_address != null }
 }
 
 resource "iosxe_bgp" "bgp" {
@@ -136,6 +108,19 @@ resource "iosxe_vlan_configuration" "l2_vlan_configuration" {
   depends_on = [iosxe_evpn_instance.l2_evpn_instance]
 }
 
+resource "iosxe_interface_vlan" "l2_svi" {
+  for_each = local.leaf_l2_services_svi
+
+  device            = each.value[0]
+  name              = each.value[1].id
+  autostate         = false
+  vrf_forwarding    = each.value[1].l3_service
+  ipv4_address      = each.value[1].ipv4_address
+  ipv4_address_mask = each.value[1].ipv4_mask
+
+  depends_on = [iosxe_vrf.vrf]
+}
+
 resource "iosxe_vrf" "vrf" {
   for_each = local.leaf_l3_services
 
@@ -222,45 +207,6 @@ resource "iosxe_interface_vlan" "l3_core_svi" {
   depends_on = [iosxe_vrf.vrf]
 }
 
-resource "iosxe_evpn_instance" "l3_evpn_instance" {
-  for_each = local.leaf_l3_service_svis
-
-  device                              = each.value.device
-  evpn_instance_num                   = each.value.id
-  vlan_based_replication_type_ingress = each.value.ipv4_multicast_group == null ? true : null
-  vlan_based_encapsulation            = "vxlan"
-  vlan_based_rd                       = "${iosxe_bgp.bgp[each.value.device].asn}:${each.value.id}"
-  vlan_based_route_target_import      = "${iosxe_bgp.bgp[each.value.device].asn}:${each.value.id}"
-  vlan_based_route_target_export      = "${iosxe_bgp.bgp[each.value.device].asn}:${each.value.id}"
-  vlan_based_ip_local_learning_enable = each.value.ip_learning
-
-  depends_on = [iosxe_evpn.evpn]
-}
-
-resource "iosxe_vlan_configuration" "l3_svi_vlan_configuration" {
-  for_each = local.leaf_l3_service_svis
-
-  device            = each.value.device
-  vlan_id           = each.value.id
-  evpn_instance     = each.value.id
-  evpn_instance_vni = each.value.id + 10000
-
-  depends_on = [iosxe_evpn_instance.l3_evpn_instance]
-}
-
-resource "iosxe_interface_vlan" "l3_svi" {
-  for_each = local.leaf_l3_service_svis
-
-  device            = each.value.device
-  name              = each.value.id
-  autostate         = false
-  vrf_forwarding    = each.value.name
-  ipv4_address      = each.value.ipv4_address
-  ipv4_address_mask = each.value.ipv4_mask
-
-  depends_on = [iosxe_vrf.vrf]
-}
-
 resource "iosxe_interface_nve" "nve" {
   for_each = var.leafs
 
@@ -268,7 +214,7 @@ resource "iosxe_interface_nve" "nve" {
   name                           = 1
   host_reachability_protocol_bgp = true
   source_interface_loopback      = var.vtep_loopback_id
-  vnis = [for l2 in concat(var.l2_services, local.l3_service_vnis) : {
+  vnis = [for l2 in var.l2_services : {
     vni_range            = l2.id + 10000
     ingress_replication  = l2.ipv4_multicast_group == null ? true : null
     ipv4_multicast_group = l2.ipv4_multicast_group
