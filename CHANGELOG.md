@@ -1,3 +1,7 @@
+## 0.1.2 (unreleased)
+
+- Add support for Terraform 1.3+
+
 ## 0.1.1
 
 - BREAKING CHANGE: Refactor l2_services
