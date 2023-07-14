@@ -96,13 +96,13 @@ module "iosxe_evpn_overlay" {
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
-| <a name="requirement_iosxe"></a> [iosxe](#requirement\_iosxe) | >=0.1.7 |
+| <a name="requirement_iosxe"></a> [iosxe](#requirement\_iosxe) | >= 0.3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_iosxe"></a> [iosxe](#provider\_iosxe) | >=0.1.7 |
+| <a name="provider_iosxe"></a> [iosxe](#provider\_iosxe) | >= 0.3.0 |
 
 ## Inputs
 
@@ -125,20 +125,20 @@ No outputs.
 
 | Name | Type |
 |------|------|
-| [iosxe_bgp.bgp](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/bgp) | resource |
-| [iosxe_bgp_address_family_ipv4_vrf.bgp_af_ipv4_vrf](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/bgp_address_family_ipv4_vrf) | resource |
-| [iosxe_bgp_address_family_ipv6_vrf.bgp_af_ipv6_vrf](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/bgp_address_family_ipv6_vrf) | resource |
-| [iosxe_bgp_address_family_l2vpn.bgp_l2vpn](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/bgp_address_family_l2vpn) | resource |
-| [iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_leaf](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/bgp_l2vpn_evpn_neighbor) | resource |
-| [iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_spine](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/bgp_l2vpn_evpn_neighbor) | resource |
-| [iosxe_bgp_neighbor.bgp_neighbor_leaf](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/bgp_neighbor) | resource |
-| [iosxe_bgp_neighbor.bgp_neighbor_spine](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/bgp_neighbor) | resource |
-| [iosxe_evpn.evpn](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/evpn) | resource |
-| [iosxe_evpn_instance.l2_evpn_instance](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/evpn_instance) | resource |
-| [iosxe_interface_nve.nve](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/interface_nve) | resource |
-| [iosxe_interface_vlan.l2_svi](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/interface_vlan) | resource |
-| [iosxe_interface_vlan.l3_core_svi](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/interface_vlan) | resource |
-| [iosxe_vlan_configuration.l2_vlan_configuration](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/vlan_configuration) | resource |
-| [iosxe_vlan_configuration.l3_vlan_configuration](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/vlan_configuration) | resource |
-| [iosxe_vrf.vrf](https://registry.terraform.io/providers/netascode/iosxe/latest/docs/resources/vrf) | resource |
+| [iosxe_bgp.bgp](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/bgp) | resource |
+| [iosxe_bgp_address_family_ipv4_vrf.bgp_af_ipv4_vrf](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/bgp_address_family_ipv4_vrf) | resource |
+| [iosxe_bgp_address_family_ipv6_vrf.bgp_af_ipv6_vrf](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/bgp_address_family_ipv6_vrf) | resource |
+| [iosxe_bgp_address_family_l2vpn.bgp_l2vpn](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/bgp_address_family_l2vpn) | resource |
+| [iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_leaf](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/bgp_l2vpn_evpn_neighbor) | resource |
+| [iosxe_bgp_l2vpn_evpn_neighbor.bgp_l2vpn_evpn_neighbor_spine](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/bgp_l2vpn_evpn_neighbor) | resource |
+| [iosxe_bgp_neighbor.bgp_neighbor_leaf](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/bgp_neighbor) | resource |
+| [iosxe_bgp_neighbor.bgp_neighbor_spine](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/bgp_neighbor) | resource |
+| [iosxe_evpn.evpn](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/evpn) | resource |
+| [iosxe_evpn_instance.l2_evpn_instance](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/evpn_instance) | resource |
+| [iosxe_interface_nve.nve](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/interface_nve) | resource |
+| [iosxe_interface_vlan.l2_svi](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/interface_vlan) | resource |
+| [iosxe_interface_vlan.l3_core_svi](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/interface_vlan) | resource |
+| [iosxe_vlan_configuration.l2_vlan_configuration](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/vlan_configuration) | resource |
+| [iosxe_vlan_configuration.l3_vlan_configuration](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/vlan_configuration) | resource |
+| [iosxe_vrf.vrf](https://registry.terraform.io/providers/CiscoDevNet/iosxe/latest/docs/resources/vrf) | resource |
 <!-- END_TF_DOCS -->

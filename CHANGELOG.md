@@ -1,3 +1,7 @@
+## 0.1.3 (unreleased)
+
+- Update provider version and namespace
+
 ## 0.1.2
 
 - Add support for Terraform 1.3+
