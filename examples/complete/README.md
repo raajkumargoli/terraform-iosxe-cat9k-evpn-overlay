@@ -1,86 +1,70 @@
-<!-- BEGIN_TF_DOCS -->
-# Cisco IOS-XE EVPN Overlay Example
+# Cisco IOS-XE EVPN Overlay Terraform Module
 
-To run this example you need to execute:
+This project provides a Terraform module to configure an EVPN overlay on Cisco IOS-XE devices.
+
+## Project Overview
+
+This Terraform module automates the configuration of an EVPN-VXLAN fabric on Cisco IOS-XE devices. It simplifies the deployment of a scalable and resilient network by managing the configuration of leafs and spines, underlay and overlay networking, and L2/L3 services.
+
+## Prerequisites
+
+Before using this module, ensure you have the following:
+
+*   Terraform v0.13 or later
+*   Access to Cisco IOS-XE devices with RESTCONF enabled
+*   Credentials for the IOS-XE devices
+
+## Configuration
+
+The module is configured through variables defined in the `settings.tf` file. Here are the key variables:
+
+*   `username`: The username for the IOS-XE devices.
+*   `password`: The password for the IOS-XE devices.
+*   `insecure`: A boolean to enable/disable insecure HTTPS connections.
+*   `timeout`: The timeout for the IOS-XE client.
+*   `iosxe_spines`: A map of spine devices, including their name and connection details.
+*   `iosxe_leafs`: A map of leaf devices, including their name and connection details.
+*   `iosxe_borders`: A list of devices to be configured as borders (currently unused in this example).
+*   `enable_anycast_gateway_mac_auto`: A boolean to enable/disable the `anycast-gateway mac auto` configuration.
+
+## Usage
+
+To use this module, follow these steps:
+
+1.  **Initialize Terraform:**
+
+    ```bash
+    terraform init
+    ```
+
+2.  **Review the plan:**
+
+    ```bash
+    terraform plan
+    ```
+
+3.  **Apply the configuration:**
+
+    ```bash
+    terraform apply
+    ```
+
+To destroy the resources created by this module, run:
 
 ```bash
-$ terraform init
-$ terraform plan
-$ terraform apply
+terraform destroy
 ```
 
-Note that this example will create resources. Resources can be destroyed with `terraform destroy`.
+## Optional Features
 
-```hcl
-module "iosxe_evpn_overlay" {
-  source  = "netascode/evpn-overlay/iosxe"
-  version = ">= 0.1.0"
+### Anycast Gateway MAC Auto
 
-  leafs                = ["LEAF-1", "LEAF-2"]
-  spines               = ["SPINE-1", "SPINE-2"]
-  underlay_loopback_id = 0
+This feature configures `anycast-gateway mac auto` on the leaf devices. It is disabled by default. This is available with 17.15 IOS-XE code. Make sure your SW is 17.15 or later when you enable this.
 
-  underlay_loopbacks = [
-    {
-      device       = "SPINE-1",
-      ipv4_address = "10.1.100.1"
-    },
-    {
-      device       = "SPINE-2",
-      ipv4_address = "10.1.100.2"
-    },
-    {
-      device       = "LEAF-1",
-      ipv4_address = "10.1.100.3"
-    },
-    {
-      device       = "LEAF-2",
-      ipv4_address = "10.1.100.4"
-    }
-  ]
+To enable this feature, set the `enable_anycast_gateway_mac_auto` variable to `true` in your `settings.tf` file or by using a `.tfvars` file.
 
-  bgp_asn = 65000
+**Example `terraform.tfvars`:**
 
-  l3_services = [
-    {
-      name = "GREEN"
-      id   = 1000
-    },
-    {
-      name = "BLUE"
-      id   = 1010
-    }
-  ]
-
-  l2_services = [
-    {
-      name                 = "L2_101"
-      id                   = 101
-      ipv4_multicast_group = "225.0.0.101"
-      ip_learning          = true
-    },
-    {
-      name = "L2_102"
-      id   = 102
-    },
-    {
-      name                     = "GREEN_1001"
-      id                       = 1001
-      ipv4_multicast_group     = "225.0.1.1"
-      l3_service               = "GREEN"
-      ipv4_address             = "172.16.1.1"
-      ipv4_mask                = "255.255.255.0"
-      ip_learning              = true
-      re_originate_route_type5 = true
-    },
-    {
-      name         = "BLUE_1011"
-      id           = 1011
-      l3_service   = "BLUE"
-      ipv4_address = "172.17.1.1"
-      ipv4_mask    = "255.255.255.0"
-    }
-  ]
-}
 ```
-<!-- END_TF_DOCS -->
+enable_anycast_gateway_mac_auto = true
+```
