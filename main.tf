@@ -162,10 +162,10 @@ resource "iosxe_bgp_address_family_ipv4_vrf" "bgp_af_ipv4_vrf" {
   asn     = iosxe_bgp.bgp[each.value].asn
   af_name = "unicast"
   vrfs = [for l3 in var.l3_services : {
-    name                   = l3.name
-    advertise_l2vpn_evpn   = true
-    redistribute_connected = true
-    redistribute_static    = true
+    name                                  = l3.name
+    ipv4_unicast_advertise_l2vpn_evpn   = true
+    ipv4_unicast_redistribute_connected = true
+    ipv4_unicast_redistribute_static    = true
   }]
 
   depends_on = [iosxe_vrf.vrf]
@@ -178,10 +178,10 @@ resource "iosxe_bgp_address_family_ipv6_vrf" "bgp_af_ipv6_vrf" {
   asn     = iosxe_bgp.bgp[each.value].asn
   af_name = "unicast"
   vrfs = [for l3 in var.l3_services : {
-    name                   = l3.name
-    advertise_l2vpn_evpn   = true
-    redistribute_connected = true
-    redistribute_static    = true
+    name                                  = l3.name
+    ipv6_unicast_advertise_l2vpn_evpn   = true
+    ipv6_unicast_redistribute_connected = true
+    ipv6_unicast_redistribute_static    = true
   }]
 
   depends_on = [iosxe_vrf.vrf]
