@@ -8,8 +8,7 @@ provider "iosxe" {
 }
 
 module "iosxe_evpn_overlay" {
-  source  = "netascode/evpn-overlay/iosxe"
-  version = ">= 0.1.0"
+  source  = "./modules/iosxe_evpn_overlay"
 
   vtep_loopback_id     = 0
   leafs                = toset(keys(local.iosxe_leafs))
