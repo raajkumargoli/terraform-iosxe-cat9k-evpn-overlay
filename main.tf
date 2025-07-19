@@ -89,7 +89,6 @@ resource "iosxe_evpn_instance" "l2_evpn_instance" {
   evpn_instance_num                   = each.value[1].id
   vlan_based_replication_type_ingress = each.value[1].ipv4_multicast_group == null ? true : null
   vlan_based_encapsulation            = "vxlan"
-  vlan_based_rd                       = "${iosxe_bgp.bgp[each.value[0]].asn}:${each.value[1].id}"
   
   vlan_based_ip_local_learning_enable = each.value[1].ip_learning
 
