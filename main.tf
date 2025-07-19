@@ -77,7 +77,7 @@ resource "iosxe_evpn" "evpn" {
   ip_duplication_limit      = 20
   ip_duplication_time       = 10
   router_id_loopback        = var.vtep_loopback_id
-  default_gateway_advertise = false
+  default_gateway_advertise = true
   logging_peer_state        = true
   route_target_auto_vni     = true
 }
@@ -89,6 +89,7 @@ resource "iosxe_evpn_instance" "l2_evpn_instance" {
   evpn_instance_num                   = each.value[1].id
   vlan_based_replication_type_ingress = each.value[1].ipv4_multicast_group == null ? true : null
   vlan_based_encapsulation            = "vxlan"
+  vlan_based_rd                       = "${iosxe_bgp.bgp[each.value[0]].asn}:${each.value[1].id}"
   
   vlan_based_ip_local_learning_enable = each.value[1].ip_learning
 
@@ -124,7 +125,7 @@ resource "iosxe_vrf" "vrf" {
 
   device              = each.value[0]
   name                = each.value[1].name
-  rd                  = "${[for l in var.underlay_loopbacks : l.ipv4_address if each.value[0] == l.device][0]}:${each.value[1].id}"
+  rd                  = "${[for l in var.underlay_loopbacks : l.ipv4_address if l.device == each.value[0]][0]}:${each.value[1].id}"
   address_family_ipv4 = true
   address_family_ipv6 = true
   ipv4_route_target_import = [{
@@ -153,15 +154,21 @@ resource "iosxe_vrf" "vrf" {
   }]
 }
 
-resource "iosxe_bgp_address_family_ipv4_vrf" "bgp_af_ipv4_vrf" {
-  for_each = var.leafs
+data "iosxe_vrf" "vrf_check" {
+  for_each = local.leaf_l3_services
+  name     = each.value[1].name
+  device   = each.value[0]
+}
 
-  device  = each.value
-  asn     = iosxe_bgp.bgp[each.value].asn
+resource "iosxe_bgp_address_family_ipv4_vrf" "bgp_af_ipv4_vrf" {
+  for_each = { for k, v in local.leaf_l3_services : k => v if data.iosxe_vrf.vrf_check[k].id != null }
+
+  device  = each.value[0]
+  asn     = iosxe_bgp.bgp[each.value[0]].asn
   af_name = "unicast"
-  vrfs = [for l3 in var.l3_services : {
-    name                                  = l3.name
-    ipv4_unicast_advertise_l2vpn_evpn   = true
+  vrfs = [{
+    name                               = each.value[1].name
+    ipv4_unicast_advertise_l2vpn_evpn  = true
     ipv4_unicast_redistribute_connected = true
     ipv4_unicast_redistribute_static    = true
   }]
@@ -170,19 +177,22 @@ resource "iosxe_bgp_address_family_ipv4_vrf" "bgp_af_ipv4_vrf" {
 }
 
 resource "iosxe_bgp_address_family_ipv6_vrf" "bgp_af_ipv6_vrf" {
-  for_each = var.leafs
+  for_each = { for k, v in local.leaf_l3_services : k => v if data.iosxe_vrf.vrf_check[k].id != null }
 
-  device  = each.value
-  asn     = iosxe_bgp.bgp[each.value].asn
+  device  = each.value[0]
+  asn     = iosxe_bgp.bgp[each.value[0]].asn
   af_name = "unicast"
-  vrfs = [for l3 in var.l3_services : {
-    name                                  = l3.name
-    ipv6_unicast_advertise_l2vpn_evpn   = true
+  vrfs = [{
+    name                               = each.value[1].name
+    ipv6_unicast_advertise_l2vpn_evpn  = true
     ipv6_unicast_redistribute_connected = true
     ipv6_unicast_redistribute_static    = true
   }]
 
-  depends_on = [iosxe_vrf.vrf]
+  depends_on = [
+    iosxe_vrf.vrf,
+    iosxe_bgp_address_family_ipv4_vrf.bgp_af_ipv4_vrf
+  ]
 }
 
 resource "iosxe_vlan_configuration" "l3_vlan_configuration" {
