@@ -3,8 +3,8 @@ terraform {
 
   required_providers {
     iosxe = {
-      source  = "netascode/iosxe"
-      version = ">=0.1.7"
+      source  = "ciscodevnet/iosxe"
+      version = "~>0.5.10"
     }
   }
 }

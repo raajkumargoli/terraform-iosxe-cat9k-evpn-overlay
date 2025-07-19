@@ -77,7 +77,7 @@ resource "iosxe_evpn" "evpn" {
   ip_duplication_limit      = 20
   ip_duplication_time       = 10
   router_id_loopback        = var.vtep_loopback_id
-  default_gateway_advertise = true
+  default_gateway_advertise = false
   logging_peer_state        = true
   route_target_auto_vni     = true
 }
@@ -89,9 +89,7 @@ resource "iosxe_evpn_instance" "l2_evpn_instance" {
   evpn_instance_num                   = each.value[1].id
   vlan_based_replication_type_ingress = each.value[1].ipv4_multicast_group == null ? true : null
   vlan_based_encapsulation            = "vxlan"
-  vlan_based_rd                       = "${iosxe_bgp.bgp[each.value[0]].asn}:${each.value[1].id}"
-  vlan_based_route_target_import      = "${iosxe_bgp.bgp[each.value[0]].asn}:${each.value[1].id}"
-  vlan_based_route_target_export      = "${iosxe_bgp.bgp[each.value[0]].asn}:${each.value[1].id}"
+  
   vlan_based_ip_local_learning_enable = each.value[1].ip_learning
 
   depends_on = [iosxe_evpn.evpn]
@@ -126,7 +124,7 @@ resource "iosxe_vrf" "vrf" {
 
   device              = each.value[0]
   name                = each.value[1].name
-  rd                  = "${iosxe_bgp.bgp[each.value[0]].asn}:${each.value[1].id}"
+  rd                  = "${[for l in var.underlay_loopbacks : l.ipv4_address if each.value[0] == l.device][0]}:${each.value[1].id}"
   address_family_ipv4 = true
   address_family_ipv6 = true
   ipv4_route_target_import = [{

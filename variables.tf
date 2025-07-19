@@ -126,4 +126,18 @@ variable "l2_services" {
   }
 }
 
+variable "username" {
+  description = "Username for connecting to IOS XE devices."
+  type        = string
+  nullable    = false
+  sensitive   = true
+}
+
+variable "password" {
+  description = "Password for connecting to IOS XE devices."
+  type        = string
+  nullable    = false
+  sensitive   = true
+}
+
 
